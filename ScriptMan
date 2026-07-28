@@ -1,0 +1,46 @@
+game.StarterGui:SetCore("SendNotification", {
+    Title = "السلام عليكم";
+    Text = "مرحباً بسكربتي 🔥";
+    Duration = 5;
+})
+
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/main/source"))()
+
+local Window = Library:CreateWindow({
+    Name = "🔥 Naruto Hub 🔥",
+    LoadingTitle = "Naruto Hub",
+    LoadingSubtitle = "By You"
+})
+
+local Tab = Window:CreateTab("Main", 4483362458)
+
+Tab:CreateToggle({
+    Name = "🍖 Auto Eat",
+    CurrentValue = false,
+    Callback = function(Value)
+        print("Auto Eat:", Value)
+    end,
+})
+
+Tab:CreateToggle({
+    Name = "🦘 Auto Hop",
+    CurrentValue = false,
+    Callback = function(Value)
+        print("Auto Hop:", Value)
+    end,
+})
+
+Tab:CreateToggle({
+    Name = "🏃 Parkour",
+    CurrentValue = false,
+    Callback = function(Value)
+        print("Parkour:", Value)
+    end,
+})
+
+Tab:CreateButton({
+    Name = "🔴 Discord / Link",
+    Callback = function()
+        setclipboard("https://discord.gg/YourLink")
+    end,
+})
