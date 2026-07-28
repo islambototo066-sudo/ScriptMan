@@ -1,1 +1,92 @@
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+-- 1. إنشاء الشاشة الواجهة (ScreenGui)
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FlingGui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- 2. إطار الواجهة الأساسي
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 220, 0, 130)
+frame.Position = UDim2.new(0.5, -110, 0.2, 0)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true -- يمكنك سحب الواجهة بيدك في الشاشة
+frame.Parent = screenGui
+
+-- إضافة حواف دائرية للواجهة
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = frame
+
+-- 3. نص "صلي على النبي" في الأعلى
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 40)
+titleLabel.Position = UDim2.new(0, 0, 0, 5)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "صلي على النبي"
+titleLabel.TextColor3 = Color3.fromRGB(255, 215, 0) -- لون ذهبي
+titleLabel.TextSize = 20
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.Parent = frame
+
+-- 4. زر التفعيل والتوقيف
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0.8, 0, 0, 45)
+toggleButton.Position = UDim2.new(0.1, 0, 0.55, 0)
+toggleButton.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+toggleButton.Text = "الفلينق: إيقاف"
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.TextSize = 18
+toggleButton.Font = Enum.Font.SourceSansBold
+toggleButton.Parent = frame
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 8)
+btnCorner.Parent = toggleButton
+
+-- 5. برمجة منطق الفلينق بقوة 200
+local isFlingActive = false
+local flingPower = 200
+local connection = nil
+
+local function startFling()
+    connection = RunService.Stepped:Connect(function()
+        if not isFlingActive then return end
+        
+        local character = player.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            local root = character.HumanoidRootPart
+            -- تطبيق سرعة دوران واهتزاز بقوة 200 لدفيع الأجسام
+            root.AssemblyAngularVelocity = Vector3.new(0, flingPower * 10, 0)
+            root.AssemblyLinearVelocity = Vector3.new(flingPower, flingPower, flingPower)
+        end
+    end)
+end
+
+-- عند الضغط على الزر
+toggleButton.MouseButton1Click:Connect(function()
+    isFlingActive = not isFlingActive
+    
+    if isFlingActive then
+        toggleButton.Text = "الفلينق: تفعيل"
+        toggleButton.BackgroundColor3 = Color3.fromRGB(50, 180, 50)
+        startFling()
+    else
+        toggleButton.Text = "الفلينق: إيقاف"
+        toggleButton.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+        if connection then
+            connection:Disconnect()
+        end
+        -- إعادة تصفير السرعة عند الإيقاف
+        local character = player.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+        end
+    end
+end)
