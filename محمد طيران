@@ -1,0 +1,85 @@
+-- سكربت طيران + واجهة
+-- LocalScript
+
+local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+
+local flying = false
+local speed = 50
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "MohammedFly"
+gui.Parent = player.PlayerGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0,250,0,180)
+frame.Position = UDim2.new(0.5,-125,0.5,-90)
+frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+frame.Parent = gui
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1,0,0,40)
+title.Text = "اهلا بك في سكربت محمد"
+title.TextColor3 = Color3.new(1,1,1)
+title.BackgroundTransparency = 1
+title.Parent = frame
+
+local fly = Instance.new("TextButton")
+fly.Size = UDim2.new(0,200,0,40)
+fly.Position = UDim2.new(0,25,0,50)
+fly.Text = "تشغيل الطيران"
+fly.Parent = frame
+
+local speedBtn = Instance.new("TextButton")
+speedBtn.Size = UDim2.new(0,200,0,40)
+speedBtn.Position = UDim2.new(0,25,0,100)
+speedBtn.Text = "السرعة: 50"
+speedBtn.Parent = frame
+
+local close = Instance.new("TextButton")
+close.Size = UDim2.new(0,40,0,40)
+close.Position = UDim2.new(1,-40,0,0)
+close.Text = "X"
+close.Parent = frame
+
+
+local bv
+
+fly.MouseButton1Click:Connect(function()
+	flying = not flying
+	
+	if flying then
+		fly.Text = "ايقاف الطيران"
+		
+		bv = Instance.new("BodyVelocity")
+		bv.MaxForce = Vector3.new(999999,999999,999999)
+		bv.Velocity = Vector3.new(0,0,0)
+		bv.Parent = hrp
+		
+		while flying do
+			local cam = workspace.CurrentCamera
+			bv.Velocity = cam.CFrame.LookVector * speed
+			task.wait()
+		end
+	else
+		fly.Text = "تشغيل الطيران"
+		if bv then
+			bv:Destroy()
+		end
+	end
+end)
+
+
+speedBtn.MouseButton1Click:Connect(function()
+	speed = speed + 25
+	if speed > 200 then
+		speed = 25
+	end
+	speedBtn.Text = "السرعة: "..speed
+end)
+
+
+close.MouseButton1Click:Connect(function()
+	gui:Destroy()
+end)
