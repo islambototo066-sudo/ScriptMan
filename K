@@ -1,0 +1,13 @@
+local remote = Instance.new("RemoteEvent")
+remote.Name = "AdminEvent"
+remote.Parent = game.ReplicatedStorage
+
+remote.OnServerEvent:Connect(function(player, action, targetName)
+	if player.Name ~= "اسمك" then return end
+
+	local target = game.Players:FindFirstChild(targetName)
+
+	if action == "kick" and target then
+		target:Kick("تم طردك 😈")
+	end
+end)
