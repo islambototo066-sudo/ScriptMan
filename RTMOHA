@@ -1,0 +1,97 @@
+local plr = game.Players.LocalPlayer
+
+------------------ شاشة البداية ------------------
+
+local gui = Instance.new("ScreenGui", plr.PlayerGui)
+gui.IgnoreGuiInset = true
+
+-- شارع
+local bg = Instance.new("ImageLabel", gui)
+bg.Size = UDim2.new(1,0,1,0)
+bg.Image = "rbxassetid://9121741826"
+bg.BackgroundTransparency = 1
+
+-- دخان
+local smoke = Instance.new("ImageLabel", bg)
+smoke.Size = UDim2.new(1.5,0,1.5,0)
+smoke.Position = UDim2.new(-0.25,0,-0.25,0)
+smoke.Image = "rbxassetid://7712212247"
+smoke.BackgroundTransparency = 1
+smoke.ImageTransparency = 0.4
+
+task.spawn(function()
+	while true do
+		smoke.Position = smoke.Position + UDim2.new(0.001,0,0,0)
+		task.wait(0.03)
+	end
+end)
+
+-- نص
+local text = Instance.new("TextLabel", bg)
+text.Size = UDim2.new(1,0,0.2,0)
+text.Position = UDim2.new(0,0,0.75,0)
+text.Text = "ايتاشي عمك"
+text.TextColor3 = Color3.fromRGB(255,0,0)
+text.BackgroundTransparency = 1
+text.TextScaled = true
+text.Font = Enum.Font.GothamBlack
+
+-- صوت
+local sound = Instance.new("Sound", bg)
+sound.SoundId = "rbxassetid://1843520824"
+sound.Looped = true
+sound.Volume = 2
+sound:Play()
+
+task.wait(5)
+gui:Destroy()
+
+------------------ Admin GUI ------------------
+
+local adminGui = Instance.new("ScreenGui", plr.PlayerGui)
+
+local frame = Instance.new("Frame", adminGui)
+frame.Size = UDim2.new(0,250,0,160)
+frame.Position = UDim2.new(0.5,-125,0.5,-80)
+frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+frame.Active = true
+frame.Draggable = true
+
+-- عنوان ايتاشي
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1,0,0,30)
+title.Text = "🔥 Itachi Script 🔥"
+title.BackgroundColor3 = Color3.fromRGB(10,10,10)
+title.TextScaled = true
+title.Font = Enum.Font.GothamBold
+
+-- تلوين متحرك
+task.spawn(function()
+	while true do
+		for i = 0,1,0.01 do
+			title.TextColor3 = Color3.fromHSV(i,1,1)
+			task.wait(0.03)
+		end
+	end
+end)
+
+-- مربع اسم اللاعب
+local box = Instance.new("TextBox", frame)
+box.Size = UDim2.new(0.9,0,0,30)
+box.Position = UDim2.new(0.05,0,0.3,0)
+box.PlaceholderText = "اسم اللاعب"
+
+-- زر كيك
+local btn = Instance.new("TextButton", frame)
+btn.Size = UDim2.new(0.9,0,0,30)
+btn.Position = UDim2.new(0.05,0,0.65,0)
+btn.Text = "Kick"
+
+-- ريموت
+local remote = game.ReplicatedStorage:WaitForChild("AdminEvent")
+
+btn.MouseButton1Click:Connect(function()
+	if box.Text ~= "" then
+		remote:FireServer("kick", box.Text)
+	end
+end)
