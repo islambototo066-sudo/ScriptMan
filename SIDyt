@@ -1,0 +1,61 @@
+local Players = game:GetService("Players")
+
+-- حط اسمك هنا
+local admins = {
+	["اسمك"] = true
+}
+
+-- تخزين اللاعبين اللي يطيرون
+local flying = {}
+
+Players.PlayerAdded:Connect(function(player)
+	
+	player.Chatted:Connect(function(msg)
+		
+		if not admins[player.Name] then return end
+		
+		local args = msg:split(" ")
+		local command = args[1]:lower()
+		local targetName = args[2]
+		
+		local target = Players:FindFirstChild(targetName)
+		
+		-- 🔨 Kick
+		if command == "/kick" and target then
+			target:Kick("تم طردك 😈")
+		end
+		
+		-- 🪑 Sit
+		if command == "/sit" and target then
+			local hum = target.Character and target.Character:FindFirstChild("Humanoid")
+			if hum then
+				hum.Sit = true
+			end
+		end
+		
+		-- 🚀 Speed
+		if command == "/speed" and target then
+			local speed = tonumber(args[3]) or 50
+			local hum = target.Character and target.Character:FindFirstChild("Humanoid")
+			if hum then
+				hum.WalkSpeed = speed
+			end
+		end
+		
+		-- 🪽 Fly
+		if command == "/fly" and target then
+			local char = target.Character
+			if char and not flying[target] then
+				
+				flying[target] = true
+				
+				local bodyVel = Instance.new("BodyVelocity")
+				bodyVel.Velocity = Vector3.new(0,50,0)
+				bodyVel.MaxForce = Vector3.new(0,math.huge,0)
+				bodyVel.Parent = char:WaitForChild("HumanoidRootPart")
+			end
+		end
+		
+	end)
+	
+end)
