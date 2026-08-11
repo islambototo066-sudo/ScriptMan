@@ -7,22 +7,31 @@ local tool = script.Parent
 local enabled = false
 local strength = 0.3
 local target = nil
+local connection
 
 -- GUI
 local gui = Instance.new("ScreenGui")
 gui.Name = "AutoItachi"
 gui.ResetOnSpawn = false
+gui.Enabled = false
+gui.Parent = player:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.fromOffset(190, 80)
-frame.Position = UDim2.new(0.5, -95, 0.5, -40)
-frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+frame.Name = "Main"
+frame.Size = UDim2.fromOffset(200, 95)
+frame.Position = UDim2.new(0.5, -100, 0.5, -48)
+frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
 frame.Parent = gui
 
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = frame
+
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,0,0,35)
+title.Size = UDim2.new(1, 0, 0, 40)
 title.BackgroundTransparency = 1
 title.Text = "أوتو: إيتاشي"
 title.TextScaled = true
@@ -30,43 +39,62 @@ title.Font = Enum.Font.GothamBold
 title.Parent = frame
 
 local button = Instance.new("TextButton")
-button.Size = UDim2.new(1,-20,0,30)
-button.Position = UDim2.new(0,10,0,42)
+button.Size = UDim2.new(1, -20, 0, 35)
+button.Position = UDim2.fromOffset(10, 50)
+button.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+button.TextColor3 = Color3.new(1, 1, 1)
 button.Text = "تشغيل"
 button.TextScaled = true
 button.Font = Enum.Font.GothamBold
 button.Parent = frame
 
--- Rainbow للعنوان
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(0, 8)
+buttonCorner.Parent = button
+
+-- Rainbow
 task.spawn(function()
 	local hue = 0
+
 	while gui.Parent do
 		hue = (hue + 0.01) % 1
-		title.TextColor3 = Color3.fromHSV(hue,1,1)
-		task.wait()
+		title.TextColor3 = Color3.fromHSV(hue, 1, 1)
+		task.wait(0.03)
 	end
 end)
 
+local function getRoot(character)
+	if not character then
+		return nil
+	end
+
+	return character:FindFirstChild("HumanoidRootPart")
+end
+
 local function getClosestPlayer()
 	local character = player.Character
-	if not character then return nil end
+	local root = getRoot(character)
 
-	local root = character:FindFirstChild("HumanoidRootPart")
-	if not root then return nil end
+	if not root then
+		return nil
+	end
 
-	local closest
-	local distance = math.huge
+	local closest = nil
+	local closestDistance = math.huge
 
 	for _, other in ipairs(Players:GetPlayers()) do
-		if other ~= player and other.Character then
-			local otherRoot = other.Character:FindFirstChild("HumanoidRootPart")
-			local humanoid = other.Character:FindFirstChildOfClass("Humanoid")
+		if other ~= player then
+			local otherCharacter = other.Character
+			local otherRoot = getRoot(otherCharacter)
+			local humanoid = otherCharacter and
+				otherCharacter:FindFirstChildOfClass("Humanoid")
 
 			if otherRoot and humanoid and humanoid.Health > 0 then
-				local d = (root.Position - otherRoot.Position).Magnitude
+				local distance =
+					(root.Position - otherRoot.Position).Magnitude
 
-				if d < distance then
-					distance = d
+				if distance < closestDistance then
+					closestDistance = distance
 					closest = other
 				end
 			end
@@ -76,48 +104,82 @@ local function getClosestPlayer()
 	return closest
 end
 
-button.MouseButton1Click:Connect(function()
-	enabled = not enabled
-	button.Text = enabled and "إيقاف" or "تشغيل"
+local function stopFollowing()
+	enabled = false
+	target = nil
+	button.Text = "تشغيل"
+end
 
-	if enabled then
-		target = getClosestPlayer()
+local function startFollowing()
+	target = getClosestPlayer()
+
+	if target then
+		enabled = true
+		button.Text = "إيقاف"
 	else
-		target = nil
+		enabled = false
+		button.Text = "لا يوجد لاعب"
+		
+		task.delay(1, function()
+			if not enabled then
+				button.Text = "تشغيل"
+			end
+		end)
+	end
+end
+
+button.MouseButton1Click:Connect(function()
+	if enabled then
+		stopFollowing()
+	else
+		startFollowing()
 	end
 end)
 
 tool.Equipped:Connect(function()
-	gui.Parent = player:WaitForChild("PlayerGui")
+	gui.Enabled = true
 end)
 
 tool.Unequipped:Connect(function()
-	gui.Parent = nil
-	enabled = false
-	target = nil
+	stopFollowing()
+	gui.Enabled = false
 end)
 
-RunService.RenderStepped:Connect(function()
-	if not enabled or not target then return end
+connection = RunService.Heartbeat:Connect(function()
+	if not enabled or not target then
+		return
+	end
 
 	local character = player.Character
 	local targetCharacter = target.Character
 
-	if not character or not targetCharacter then return end
+	local root = getRoot(character)
+	local targetRoot = getRoot(targetCharacter)
 
-	local root = character:FindFirstChild("HumanoidRootPart")
-	local targetRoot = targetCharacter:FindFirstChild("HumanoidRootPart")
-
-	if not root or not targetRoot then return end
-
-	-- قوة التتبع 0.3
-	root.CFrame = root.CFrame:Lerp(
-		CFrame.lookAt(root.Position, targetRoot.Position),
-		strength
-	)
+	if not root or not targetRoot then
+		target = getClosestPlayer()
+		return
+	end
 
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
-	if humanoid then
+
+	if not humanoid or humanoid.Health <= 0 then
+		return
+	end
+
+	-- يتجه ويتحرك نحو الهدف بقوة 0.3
+	local direction = targetRoot.Position - root.Position
+
+	if direction.Magnitude > 2 then
 		humanoid:MoveTo(targetRoot.Position)
+	end
+
+	if direction.Magnitude > 0.1 then
+		local lookPosition = root.Position + direction.Unit
+
+		root.CFrame = root.CFrame:Lerp(
+			CFrame.lookAt(root.Position, lookPosition),
+			strength
+		)
 	end
 end)
