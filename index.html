@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Security Simulation</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:#050505;
+  color:white;
+  font-family:Arial,sans-serif;
+  overflow-x:hidden;
+}
+
+.header{
+  background:#a00000;
+  padding:16px;
+  text-align:center;
+  font-weight:bold;
+  letter-spacing:1px;
+}
+
+.card{
+  width:88%;
+  margin:25px auto;
+  padding:20px;
+  background:#111;
+  border:1px solid #555;
+  border-radius:10px;
+}
+
+textarea{
+  width:95%;
+  height:100px;
+  background:#050505;
+  color:white;
+  border:1px solid #555;
+  padding:12px;
+  resize:none;
+}
+
+button{
+  margin-top:15px;
+  padding:13px 22px;
+  background:#d00000;
+  color:white;
+  border:0;
+  border-radius:7px;
+  font-weight:bold;
+}
+
+.status{
+  margin-top:20px;
+  padding:12px;
+  background:#080808;
+  border:1px solid #333;
+  color:#aaa;
+}
+
+.progressBox{
+  width:90%;
+  height:20px;
+  background:#222;
+  margin:15px auto;
+  border-radius:10px;
+  overflow:hidden;
+}
+
+#progress{
+  width:0%;
+  height:100%;
+  background:#d00000;
+  transition:.2s;
+}
+
+#log{
+  background:#020202;
+  border:1px solid #333;
+  height:150px;
+  overflow:hidden;
+  padding:10px;
+  font-family:monospace;
+  font-size:13px;
+  color:#aaa;
+}
+
+#hackScreen{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:#000;
+  z-index:9999;
+  text-align:center;
+  overflow:auto;
+}
+
+.big{
+  margin-top:12vh;
+  font-size:65px;
+  animation:blink .35s infinite;
+}
+
+#hackText{
+  color:#ff2222;
+  font-size:32px;
+  font-weight:bold;
+}
+
+#details{
+  color:#aaa;
+  margin:20px;
+  line-height:1.8;
+}
+
+.warning{
+  color:#ff3333;
+  font-size:20px;
+  margin:15px;
+}
+
+.fakeTerminal{
+  width:90%;
+  margin:20px auto;
+  background:#050505;
+  border:1px solid #333;
+  padding:15px;
+  text-align:left;
+  font-family:monospace;
+  color:#888;
+  min-height:130px;
+}
+
+.final{
+  display:none;
+  margin:25px;
+  padding:20px;
+  border:1px solid #555;
+  background:#111;
+  color:#ddd;
+}
+
+@keyframes blink{
+  50%{opacity:.2}
+}
+
+@keyframes shake{
+  0%{transform:translate(0)}
+  25%{transform:translate(3px)}
+  50%{transform:translate(-3px)}
+  75%{transform:translate(2px)}
+  100%{transform:translate(0)}
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+⚠ SECURITY SUPPORT
+</div>
+
+<div class="card">
+
+<h2>Contact Security Support</h2>
+
+<p>Describe your problem:</p>
+
+<textarea id="message"
+placeholder="Write your message..."></textarea>
+
+<br>
+
+<button onclick="sendMessage()">
+SEND MESSAGE
+</button>
+
+<div class="status">
+STATUS: <span id="status">WAITING</span>
+</div>
+
+<h3>Security Scan</h3>
+
+<div class="progressBox">
+<div id="progress"></div>
+</div>
+
+<div id="log">
+&gt; System ready...<br>
+&gt; Waiting for security request...
+</div>
+
+</div>
+
+
+<!-- شاشة المحاكاة -->
+
+<div id="hackScreen">
+
+<div class="big">☠️</div>
+
+<div id="hackText">
+DEVICE COMPROMISED
+</div>
+
+<div class="warning">
+⚠ CRITICAL SECURITY ALERT ⚠
+</div>
+
+<div id="details">
+UNAUTHORIZED ACCESS DETECTED
+</div>
+
+<div class="fakeTerminal" id="terminal">
+&gt; Initializing security system...<br>
+</div>
+
+<div class="final" id="finalBox">
+
+<h2>SIMULATION COMPLETE</h2>
+
+<p>
+This was only a fictional security simulation.
+</p>
+
+<p>
+✓ No device was hacked<br>
+✓ No files were accessed<br>
+✓ No passwords were collected<br>
+✓ No data was sent anywhere
+</p>
+
+</div>
+
+</div>
+
+
+<script>
+
+let audioCtx;
+let alarm;
+
+function addLog(text){
+
+  let log=document.getElementById("log");
+
+  log.innerHTML +=
+    "&gt; "+text+"<br>";
+
+  log.scrollTop=log.scrollHeight;
+}
+
+function terminal(text){
+
+  let box=document.getElementById("terminal");
+
+  box.innerHTML +=
+    "&gt; "+text+"<br>";
+
+  box.scrollTop=box.scrollHeight;
+}
+
+function beep(){
+
+  if(!audioCtx) return;
+
+  let osc=audioCtx.createOscillator();
+  let gain=audioCtx.createGain();
+
+  osc.type="square";
+  osc.frequency.value=900;
+
+  gain.gain.value=.09;
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start();
+
+  setTimeout(()=>{
+    osc.stop();
+  },180);
+}
+
+
+function sendMessage(){
+
+  let message=
+    document.getElementById("message")
+    .value.trim();
+
+  if(message===""){
+    alert("Please enter a message first.");
+    return;
+  }
+
+  document.getElementById("hackScreen")
+    .style.display="block";
+
+  document.body.style.animation=
+    "shake .15s infinite";
+
+  audioCtx=
+    new (window.AudioContext ||
+    window.webkitAudioContext)();
+
+  alarm=setInterval(beep,350);
+
+  let progress=0;
+
+  let progressTimer=setInterval(()=>{
+
+    progress+=2;
+
+    document.getElementById("progress")
+      .style.width=progress+"%";
+
+    if(progress%10===0){
+
+      addLog(
+        "Security scan: "+progress+"%"
+      );
+
+    }
+
+    if(progress>=100){
+      clearInterval(progressTimer);
+    }
+
+  },100);
+
+  document.getElementById("status")
+    .textContent="CRITICAL";
+
+  setTimeout(()=>{
+    terminal("Connecting to security monitor...");
+  },500);
+
+  setTimeout(()=>{
+    terminal("Checking device status...");
+  },1000);
+
+  setTimeout(()=>{
+    terminal("Scanning applications...");
+  },1500);
+
+  setTimeout(()=>{
+    terminal("Checking network activity...");
+  },2000);
+
+  setTimeout(()=>{
+    terminal("WARNING: SUSPICIOUS ACTIVITY DETECTED");
+  },2500);
+
+  setTimeout(()=>{
+    terminal("SECURITY LEVEL: CRITICAL");
+  },3000);
+
+  setTimeout(()=>{
+    document.getElementById("hackText")
+      .textContent=
+      "تم اختراقك من قبل الهكر المغربي";
+  },3500);
+
+  setTimeout(()=>{
+    terminal(
+      "A Moroccan hacker has breached your device."
+    );
+  },3800);
+
+  setTimeout(()=>{
+
+    clearInterval(alarm);
+
+    document.body.style.animation="";
+
+    document.getElementById("hackText")
+      .textContent=
+      "SIMULATION COMPLETE";
+
+    document.getElementById("details")
+      .innerHTML=
+      "NO DEVICE WAS HACKED<br>"+
+      "NO DATA WAS SENT OR COLLECTED";
+
+    document.getElementById("finalBox")
+      .style.display="block";
+
+  },7000);
+
+}
+
+</script>
+
+</body>
+</html>
