@@ -1,4 +1,5 @@
 local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
 local gui = Instance.new("ScreenGui")
@@ -20,7 +21,7 @@ image.Position = UDim2.new(0.5, -90, 0, 40)
 image.BackgroundTransparency = 1
 image.Image = "rbxassetid://74998534075275"
 
-local function button(name, text, y, color)
+local function makeButton(name, text, y, color)
     local b = Instance.new("TextButton")
     b.Name = name
     b.Parent = frame
@@ -33,8 +34,11 @@ local function button(name, text, y, color)
     return b
 end
 
-local kick = button("KickButton", "KICK", 220, Color3.fromRGB(190, 35, 35))
-local face = button("FaceButton", "FACE", 275, Color3.fromRGB(35, 100, 200))
+local kick = makeButton("KickButton", "KICK", 220,
+    Color3.fromRGB(190, 35, 35))
+
+local face = makeButton("FaceButton", "FACE", 275,
+    Color3.fromRGB(35, 100, 200))
 
 local close = Instance.new("TextButton")
 close.Parent = frame
@@ -44,31 +48,26 @@ close.Text = "X"
 close.TextScaled = true
 close.BackgroundColor3 = Color3.fromRGB(190, 35, 35)
 
-local function addFace(p)
-    local char = p.Character
-    local head = char and char:FindFirstChild("Head")
-    if not head or head:FindFirstChild("ImageBillboard") then
-        return
-    end
-
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "ImageBillboard"
-    billboard.Adornee = head
-    billboard.Size = UDim2.fromOffset(100, 100)
-    billboard.StudsOffset = Vector3.new(0, 0, 2)
-    billboard.AlwaysOnTop = true
-    billboard.Parent = head
-
-    local img = Instance.new("ImageLabel")
-    img.Size = UDim2.fromScale(1, 1)
-    img.BackgroundTransparency = 1
-    img.Image = "rbxassetid://74998534075275"
-    img.Parent = billboard
-end
-
 face.Activated:Connect(function()
     for _, p in ipairs(Players:GetPlayers()) do
-        addFace(p)
+        local char = p.Character
+        local head = char and char:FindFirstChild("Head")
+
+        if head and not head:FindFirstChild("ImageBillboard") then
+            local billboard = Instance.new("BillboardGui")
+            billboard.Name = "ImageBillboard"
+            billboard.Adornee = head
+            billboard.Size = UDim2.fromOffset(100, 100)
+            billboard.StudsOffset = Vector3.new(0, 0, 2)
+            billboard.AlwaysOnTop = true
+            billboard.Parent = head
+
+            local img = Instance.new("ImageLabel")
+            img.Size = UDim2.fromScale(1, 1)
+            img.BackgroundTransparency = 1
+            img.Image = "rbxassetid://74998534075275"
+            img.Parent = billboard
+        end
     end
 end)
 
@@ -80,9 +79,9 @@ close.Activated:Connect(function()
     gui:Destroy()
 end)
 
--- تحريك الواجهة باللمس أو الماوس
-local UIS = game:GetService("UserInputService")
-local dragging, dragStart, startPos
+-- تحريك الواجهة بالماوس أو اللمس
+local dragging = false
+local dragStart, startPos
 
 frame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.Touch
